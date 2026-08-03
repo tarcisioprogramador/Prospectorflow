@@ -18,7 +18,7 @@ for _stream in (getattr(sys, 'stdout', None), getattr(sys, 'stderr', None)):
         pass
 
 PASTA = os.path.dirname(os.path.abspath(__file__))
-DB = os.environ.get('PROSPECTOR_DB', DB)
+DB = os.environ.get('PROSPECTOR_DB', os.path.join(PASTA, 'prospector.db'))
 CFG = {}
 try:
     CFG = json.load(open(os.path.join(PASTA, 'config-standalone.json'), encoding='utf-8'))
