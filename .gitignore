@@ -2,3 +2,4 @@ __pycache__/
 *.pyc
 config-standalone.json
 motor-log.txt
+painel-log.txt
