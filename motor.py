@@ -58,7 +58,10 @@ DIRETORIOS = ('doctoralia', 'tuasaude', 'dietbox', 'dovivo', 'guiamais', 'yellow
               'tripadvisor', 'ecadastro', 'cnpj', 'google.com', 'guia.', 'catalogo', 'top10', 'melhores',
               'ranking', 'empresas', 'wikimapia', 'linkedin', 'reclameaqui', 'facebook',
               'boaconsulta', 'classisp', 'fitlocal', 'nutrimatch', 'crn3', 'nutriconsulta', 'clinicasim',
-              'conselho', 'solutudo', 'finda', 'guialocal', 'dentmap', 'odontoavalia')
+              'conselho', 'solutudo', 'finda', 'guialocal', 'dentmap', 'odontoavalia',
+              'guiatelefone', 'unilocal', 'infobel', 'apontador', 'fresha', 'empresite', 'achacidade',
+              'gupy', 'encontra', 'todasasareas', 'infocenter', 'webempresa', 'econtei',
+              'glamspot', 'locaisdobrasil', 'acharesteticas')
 CIDADES = {  # lat, long das capitais/grandes cidades; outras vão pro geocode via LLM
  'sao paulo': (-23.55052, -46.633308), 'guarulhos': (-23.454, -46.5333), 'campinas': (-22.9099, -47.0626),
  'rio de janeiro': (-22.906847, -43.172896), 'belo horizonte': (-19.916681, -43.934493),
@@ -401,22 +404,63 @@ def _diagnostico(zap, ig, email=None, siteA=None, nivel=None):
     tag = _TAG_NIVEL.get(nivel or 'media', '🟡 Média')
     return '%s oportunidade — %s. Sugestão: %s.' % (tag, '; '.join(faltas), ' + '.join(servicos))
 
+def _ddg_resultados(consulta):
+    """Resultados do DuckDuckGo como pares (url, título). Vazio se bloqueado ou sem resultados."""
+    import urllib.parse
+    try:
+        _, html = _http_get('https://html.duckduckgo.com/html/?q=' + urllib.parse.quote(consulta))
+    except Exception:
+        return []
+    baixo = html.lower()
+    if 'result__a' not in html or 'anomaly' in baixo or 'captcha' in baixo or 'blocked' in baixo:
+        return []
+    pares = []
+    for href, titulo in re.findall(r'<a[^>]*class="result__a"[^>]*href="([^"]+)"[^>]*>(.*?)</a>', html):
+        url = _decodificar_ddg(href)
+        if url.lower().startswith('http'):
+            pares.append((url, (re.sub(r'<[^>]+>', '', titulo) or '').strip()))
+    return pares
+
+def _bing_rss(consulta):
+    """Bing via RSS — endpoint leve e que continua funcionando mesmo quando os buscadores
+    de HTML bloqueiam a máquina (anomalia/captcha)."""
+    import urllib.parse
+    try:
+        st, html = _http_get('https://www.bing.com/search?format=rss&setlang=pt-br&mkt=pt-BR&q=' + urllib.parse.quote(consulta))
+    except Exception:
+        return []
+    if st != 200 or '<item>' not in html:
+        return []
+    pares = []
+    for m in re.finditer(r'<item>(.*?)</item>', html, re.S):
+        bloco = m.group(1)
+        t = re.search(r'<title>(.*?)</title>', bloco, re.S)
+        l = re.search(r'<link>(.*?)</link>', bloco, re.S)
+        url = (l.group(1).strip() if l else '').strip()
+        titulo = (re.sub(r'<[^>]+>', '', t.group(1)) if t else '').strip()
+        if url.startswith('http') and titulo:
+            pares.append((url, titulo))
+    return pares
+
 def buscar_negocios_grátis(nicho, cidade, quantidade):
     """Acha negócios REAIS sem gastar nada: DuckDuckGo acha o site, a gente extrai
-    e-mail/WhatsApp/Instagram do próprio site. Sem nota do Google (dado pago)."""
-    import urllib.parse
+    e-mail/WhatsApp/Instagram do próprio site. Sem nota do Google (dado pago).
+    Se o DDG bloquear (anomalia/captcha/202), cai pro Bing via RSS automaticamente."""
+    import urllib.parse, time as _time
     vistos, negocios = set(), []
+    alvo = norm(cidade)
     consultas = ['%s em %s' % (nicho, cidade), '%s %s contato' % (nicho, cidade),
                  'site %s %s whatsapp' % (nicho, cidade)]
     for consulta in consultas:
         if len(negocios) >= quantidade: break
-        try:
-            _, html = _http_get('https://html.duckduckgo.com/html/?q=' + urllib.parse.quote(consulta))
-        except Exception:
+        pares = _ddg_resultados(consulta)
+        if not pares:
+            pares = _bing_rss(consulta)
+        if not pares:
             continue
-        for href, titulo in re.findall(r'<a[^>]*class="result__a"[^>]*href="([^"]+)"[^>]*>(.*?)</a>', html):
+        for url, titulo in pares:
             if len(negocios) >= quantidade: break
-            url = _decodificar_ddg(href)
+            url = url.strip()
             if not url.lower().startswith('http'): continue
             dom = re.sub(r'^www\.', '', url.split('//')[-1].split('/')[0]).lower()
             if not dom or dom in vistos: continue
@@ -429,14 +473,18 @@ def buscar_negocios_grátis(nicho, cidade, quantidade):
                 continue
             if len(conteudo) < 300 or not re.search(r'<\s*(html|head|body)', conteudo[:2000], re.I):
                 continue
+            # guarda de cidade: o negócio tem que citar a cidade alvo (título ou conteúdo)
+            if alvo and alvo not in norm(titulo + ' ' + conteudo[:30000]):
+                continue
             emails, tel, zap, ig = _extrair_contatos(conteudo)
             if not (emails or zap or tel or ig): continue
-            negocios.append({'title': (re.sub(r'<[^>]+>', '', titulo) or '').strip() or url,
+            negocios.append({'title': titulo or url,
                              'category': nicho, 'url': url, 'domain': dom,
                              'phone': tel, 'email': emails[0].lower() if emails else None,
                              'whatsapp': zap, 'instagram': ig, 'address': None,
                              'rating': {}, 'city': cidade, 'logo': '', 'main_image': '',
                              'conteudo': conteudo})
+        _time.sleep(1)
     return negocios
 
 def main_grátis(nicho, cidade, qtd):
