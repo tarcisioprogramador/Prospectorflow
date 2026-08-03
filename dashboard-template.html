@@ -171,8 +171,11 @@ select.mini{border:1px solid var(--line);border-radius:8px;padding:5px 8px;font-
 .ltag.ig-on{background:var(--ok-soft);border-color:var(--ok);color:#3f7d4e}
 .lead-info{font-size:12.5px;color:var(--muted);margin:4px 0;line-height:1.6}
 .lead-abordagem{font-size:12.5px;color:var(--ink);background:var(--accent-soft);border-radius:9px;padding:8px 11px;margin-top:8px}
-.rel-msg{font-size:12.5px;line-height:1.55;white-space:pre-wrap;word-break:break-word;background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:10px 12px;margin-top:10px;max-height:230px;overflow-y:auto;color:var(--ink)}
-.rel-msg.alt{display:none}
+ .rel-msg{font-size:12.5px;line-height:1.55;white-space:pre-wrap;word-break:break-word;background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:10px 12px;margin-top:10px;max-height:230px;overflow-y:auto;color:var(--ink)}
+ .rel-msg.alt{display:none}
+ .rel-diag{font-size:12px;line-height:1.5;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:9px 12px;margin-top:8px}
+ .op-tag{font-size:10.5px;font-weight:800;padding:2px 9px;border-radius:20px;color:#fff;letter-spacing:.3px}
+ .op-alta{background:#B0483B}.op-media{background:#C9A227}.op-baixa{background:#3E8E5A}
 .lead-acoes{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
 .la{font-size:12px;font-weight:700;padding:6px 12px;border-radius:9px;text-decoration:none;border:1px solid var(--line);color:var(--ink);cursor:pointer;background:var(--white)}
 .la.zap{background:#25D366;color:#fff;border-color:#25D366}.la.ig{background:#E1306C;color:#fff;border-color:#E1306C}.la.site{background:var(--ink);color:#fff;border-color:var(--ink)}
@@ -456,6 +459,10 @@ function _cardRel(l){
  var z=_msgZap(l),e=_msgEmail(l);
  var temp=l.temperatura||'frio';
  var emoji=temp==='quente'?'\ud83d\udd25':(temp==='morno'?'\ud83c\udf24\ufe0f':'\u2744\ufe0f');
+ var op=l.oportunidade||'';
+ var opCls={'alta':'op-alta','media':'op-media','baixa':'op-baixa'}[op]||'';
+ var opTxt={'alta':'\ud83d\udd34 ALTA','media':'\ud83d\udfe1 M\u00c9DIA','baixa':'\ud83d\udfe2 BAIXA'}[op]||'';
+ var maps='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(_nomeCurto(l)+' '+(l.cidade||''));
  var hasZap=/^55\d{10,11}$/.test(l.whatsapp||'');
  var hasEmail=(l.email||'').indexOf('@')>1;
  var btns=[];
@@ -465,14 +472,17 @@ function _cardRel(l){
  if(hasEmail)btns.push('<a class="la" href="mailto:'+_esc(l.email)+'?subject='+encodeURIComponent('Proposta de site moderno \u2014 '+_nomeCurto(l))+'&body='+encodeURIComponent(e)+'">E-mail \u2197</a>');
  if(l.instagram)btns.push('<a class="la ig" target="_blank" href="https://instagram.com/'+_esc(l.instagram)+'">Instagram</a>');
  if(l.siteAntigo)btns.push('<a class="la site" target="_blank" href="'+_esc(l.siteAntigo)+'">Site</a>');
+ btns.push('<a class="la" target="_blank" href="'+maps+'">\ud83d\udccd Maps</a>');
  var temDemo=_temDemo(l);
  if(!temDemo&&l.siteAntigo)btns.push('<a class="la" style="background:var(--accent-soft);border-color:var(--accent);color:var(--accent-2)" onclick="gerarDemo(\''+l.slug+'\',this)">\ud83c\udfa8 Gerar demo gr\u00e1tis</a>');
  else if(temDemo){btns.push('<a class="la" target="_blank" href="sites/'+l.slug+'/'+l.slug+'.html">\ud83d\udc41\ufe0f Ver pr\u00e9via</a>');btns.push('<a class="la" target="_blank" href="comparar.html">\ud83d\udd04 Antes/depois</a>');}
  btns.push('<a class="la contat" onclick="marcarContatado(\''+l.slug+'\')">marcar contatado</a>');
  return '<div class="lead-card"><div class="badge t-'+temp+'">'+(l.score||0)+'<small>'+emoji+' '+temp.toUpperCase()+'</small></div>'
   +'<div class="lead-main"><div class="lead-nome">'+_esc(_nomeCurto(l))+'</div>'
+  +(opTxt?'<div style="margin-top:4px"><span class="op-tag '+opCls+'">'+opTxt+'</span></div>':'')
   +'<div class="lead-tags"><span class="ltag">'+_esc(l.nicho||'\u2014')+'</span><span class="ltag">'+_esc(l.cidade||'\u2014')+'</span>'+(l.busca?'<span class="ltag">'+_esc(l.busca)+'</span>':'')+'</div>'
   +'<div class="lead-info">'+_contatosTxt(l)+'</div>'
+  +(l.diagnostico?'<div class="rel-diag">'+_esc(l.diagnostico)+'</div>':'')
   +'<div class="rel-msg">'+_esc(z)+'</div>'
   +'<div class="rel-msg alt">'+_esc(e)+'</div>'
   +'<div class="lead-acoes">'+btns.join('')+'</div>'
@@ -490,6 +500,8 @@ function vRelatorio(){
  var comZap=fil().filter(function(l){return /^55\d{10,11}$/.test(l.whatsapp||'')}).length;
  var comEmail=fil().filter(function(l){return (l.email||'').indexOf('@')>1}).length;
  var ls=_listaRel();
+ var ops={'alta':0,'media':0,'baixa':0};var semOps=0;
+ ls.forEach(function(l){if(ops.hasOwnProperty(l.oportunidade))ops[l.oportunidade]++;else semOps++;});
  var sig=_sigLead();
  var html='<div class="painel" style="margin-bottom:14px"><h2>\ud83d\udccb Relat\u00f3rio de prospec\u00e7\u00e3o</h2>'
   +'<p style="font-size:13px;color:var(--muted);margin:0 0 12px">Mensagens prontas pra abordar cada lead. Ajuste o texto se quiser, copie e envie. A assinatura usa seu nome em <b>Configura\u00e7\u00f5es</b> \u2014 hoje: <b>'+_esc(sig)+'</b>.</p>'
@@ -501,6 +513,10 @@ function vRelatorio(){
   +'</div>'
   +'<div class="stats" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr));margin-bottom:0">'
   +[['Leads',total,''],['Com WhatsApp',comZap,'verde'],['Com e-mail',comEmail,'verde'],['Sem contato',nao,'laranja']].map(function(s){return '<div class="stat '+s[2]+'"><div class="n">'+s[1]+'</div><div class="l">'+s[0]+'</div></div>'}).join('')
+  +'</div>'
+  +'<div class="stats" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin:10px 0 0">'
+  +[['\ud83d\udd34 Alta oportunidade',ops.alta,'laranja'],['\ud83d\udfe1 M\u00e9dia',ops.media,''],['\ud83d\udfe2 Baixa',ops.baixa,'verde']].map(function(s){return '<div class="stat '+s[2]+'"><div class="n">'+s[1]+'</div><div class="l">'+s[0]+'</div></div>'}).join('')
+  +(semOps?'<div style="font-size:11px;color:var(--muted);align-self:center">'+semOps+' sem classifica\u00e7\u00e3o (leads antigos)</div>':'')
   +'</div></div>';
  if(!ls.length)return html+'<div class="painel vazio" style="padding:30px">Nenhum lead nesta sele\u00e7\u00e3o.</div>';
  return html+ls.map(_cardRel).join('');

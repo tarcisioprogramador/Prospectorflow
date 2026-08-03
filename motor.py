@@ -324,6 +324,83 @@ def _extrair_contatos(html):
         elif len(tel) == 12 and tel.startswith('55'): zap = tel
     return emails, tel, zap, ig
 
+def _link_maps(nome, cidade):
+    """Link do Google Maps (busca) — sempre abre no lugar certo, mesmo sem a API do Google."""
+    import urllib.parse
+    return 'https://www.google.com/maps/search/?api=1&query=' + urllib.parse.quote(('%s %s' % (nome, cidade)))
+
+def _analisar_site(html):
+    """Análise 100% offline do site: responsividade, peso, clareza da oferta e CTA.
+    Sem saldo AIsa, é isso que alimenta o diagnóstico de cada lead."""
+    baixo = (html or '').lower()
+    razoes = []
+    eh_html = any(m in baixo for m in ('<!doctype', '<html', '<head', '<body'))
+    if eh_html and not ('width=device-width' in baixo or 'name="viewport"' in baixo):
+        design = 'datado'; razoes.append('não responsivo (sem viewport)')
+    else:
+        design = 'moderno'
+    if any(m in baixo for m in ('wixsite.com', 'wix.com', 'blogspot', 'wordpress.com', 'webflow', '000webhostapp')):
+        if design == 'moderno': design = 'template'
+        razoes.append('plataforma gratuita/template')
+    tam = len(baixo)
+    if tam > 300000: ux = 'pesado'; razoes.append('página pesada (>300KB)')
+    elif tam < 12000: ux = 'mínimo'; razoes.append('conteúdo muito enxuto')
+    else: ux = 'ok'
+    servicos = ('orçamento','orcamento','agendar','agende','consulta','atendimento','serviços','servicos',
+                'tratamento','resultado','procedimento','plano','matrícula','matricula','aulas','delivery',
+                'pedido','cardápio','cardapio','exame','preço','precos')
+    oferta = 'clara' if any(s in baixo for s in servicos) else 'genérica'
+    if oferta == 'genérica': razoes.append('oferta pouco clara')
+    ctas = ('whatsapp','wa.me','orçamento','orcamento','agendar','agende','chamar no whats','fale conosco',
+            'falar com','pedir','comprar','solicitar','saiba mais','contratar','cadastre-se','inscreva',
+            'faça seu orçamento','faca seu orcamento','entre em contato')
+    cta = any(c in baixo for c in ctas)
+    if not cta: razoes.append('sem CTA de conversão')
+    return {'design': design, 'ux': ux, 'oferta': oferta, 'cta': cta, 'razoes': razoes}
+
+def _classificar_oportunidade(zap, ig, email=None, siteA=None):
+    """🔴 Alta / 🟡 Média / 🟢 Baixa — quanto mais fraco o digital, maior a oportunidade de venda."""
+    siteA = siteA or {}
+    fraco = 0
+    if not zap: fraco += 1
+    if not email: fraco += 1
+    if not ig: fraco += 1
+    if siteA.get('design') in ('datado', 'template', 'sem site'): fraco += 1
+    if siteA.get('ux') in ('pesado', 'mínimo'): fraco += 1
+    if not siteA.get('cta'): fraco += 1
+    if siteA.get('oferta') == 'genérica': fraco += 1
+    if fraco >= 4: return 'alta'
+    if fraco >= 2: return 'media'
+    return 'baixa'
+
+_TAG_NIVEL = {'alta': '🔴 Alta', 'media': '🟡 Média', 'baixa': '🟢 Baixa'}
+
+def _diagnostico(zap, ig, email=None, siteA=None, nivel=None):
+    """Mini diagnóstico por empresa: falhas + sugestão de serviços (o 'porquê' de cada classificação)."""
+    siteA = siteA or {}
+    faltas = []
+    if not zap: faltas.append('sem WhatsApp direto')
+    if not email: faltas.append('sem e-mail')
+    if not ig: faltas.append('sem Instagram')
+    if siteA.get('design') == 'datado': faltas.append('site não responsivo/datado')
+    elif siteA.get('design') == 'template': faltas.append('site em plataforma grátis/template')
+    elif siteA.get('design') == 'sem site': faltas.append('NÃO tem site próprio — maior oportunidade')
+    if siteA.get('ux') == 'pesado': faltas.append('site pesado/lento')
+    if siteA.get('oferta') == 'genérica': faltas.append('oferta pouco clara')
+    if not siteA.get('cta'): faltas.append('sem CTA de conversão')
+    if not faltas: faltas.append('presença digital razoável, mas sempre há espaço pra vender mais')
+    servicos = []
+    if not zap or not ig or not email:
+        servicos.append('automação de atendimento (WhatsApp/Instagram)')
+    if siteA.get('design') in ('datado', 'template', 'sem site') or not siteA.get('cta'):
+        servicos.append('site moderno com CTA e captação de leads')
+    if not ig:
+        servicos.append('funil e CRM')
+    if not servicos:
+        servicos.append('funil e CRM')
+    tag = _TAG_NIVEL.get(nivel or 'media', '🟡 Média')
+    return '%s oportunidade — %s. Sugestão: %s.' % (tag, '; '.join(faltas), ' + '.join(servicos))
+
 def buscar_negocios_grátis(nicho, cidade, quantidade):
     """Acha negócios REAIS sem gastar nada: DuckDuckGo acha o site, a gente extrai
     e-mail/WhatsApp/Instagram do próprio site. Sem nota do Google (dado pago)."""
@@ -374,6 +451,9 @@ def main_grátis(nicho, cidade, qtd):
         emails, tel, zap, ig = n.get('email'), n.get('phone'), n.get('whatsapp'), n.get('instagram')
         if not (emails or zap or tel or ig):
             descartados.append((nome, 'sem contato')); continue
+        siteA = _analisar_site(n.get('conteudo') or '')
+        nivel = _classificar_oportunidade(zap, ig, email=emails, siteA=siteA)
+        diag = _diagnostico(zap, ig, email=emails, siteA=siteA, nivel=nivel)
         ig2 = {'seguidores': None, 'posts': None, 'ativo': None, 'categoria': None, 'ultimo_post_dias': None}
         sc = 20  # tem site próprio
         if emails: sc += 15
@@ -390,6 +470,8 @@ def main_grátis(nicho, cidade, qtd):
                 'igSeguidores': None, 'igPosts': None, 'igAtivo': None, 'igCategoria': None,
                 'obs': 'modo grátis · domínio: %s' % n.get('domain'),
                 'score': sc, 'temperatura': temp,
+                'oportunidade': nivel, 'diagnostico': diag,
+                'siteAnalise': json.dumps(siteA, ensure_ascii=False),
                  'abordagem': 'E-mail + WhatsApp com elogio ao conteúdo e proposta de site moderno; sem IA, revisar o gancho antes.',
                  'dossie': json.dumps({'endereco': None, 'ig': ig2,
                                         'motivo': 'site encontrado em busca gratuita — avaliar manualmente'}, ensure_ascii=False)}
@@ -399,12 +481,15 @@ def main_grátis(nicho, cidade, qtd):
         qualificados.append(lead)
         salvar_lead(DB, lead)
         emoji = '🔥' if temp == 'quente' else ('🌤️' if temp == 'morno' else '❄️')
-        print('   %s %s — score %d — %s%s%s' % (emoji, nome, sc,
+        print('   %s %s — score %d — %s — %s%s%s' % (emoji, nome, sc, _TAG_NIVEL.get(nivel, nivel),
               ('e-mail' if emails else ''), (' + WhatsApp' if zap else ''), (' · IG @%s' % ig) if ig else ''))
     for nome, motivo in descartados:
         print('   ✖ %s — %s' % (nome, motivo))
     regenerar_dashboard()
+    niveis = {}
+    for l in qualificados: niveis[l['oportunidade']] = niveis.get(l['oportunidade'], 0) + 1
     print('\n📊 %d leads REAIS encontrados de graça (%d 🔥 quentes).' % (len(qualificados), len([l for l in qualificados if l['temperatura'] == 'quente'])))
+    print('📈 Oportunidades: %d 🔴 alta · %d 🟡 média · %d 🟢 baixa.' % (niveis.get('alta', 0), niveis.get('media', 0), niveis.get('baixa', 0)))
     print('💡 Dica: com saldo no AIsa a máquina também traz nota do Google e avaliação por IA.')
 
 def extrair_site(url, chave, simular):
@@ -458,7 +543,8 @@ def salvar_lead(db, lead):
     campos = ['slug','nome','nicho','cidade','nota','avaliacoes','email','telefone','whatsapp',
               'siteAntigo','motivo','status','urlNova','dataProposta','valor','obs',
               'contratoStatus','contratoEm','manutencao','pago','docCliente','endCliente',
-              'instagram','igSeguidores','igPosts','igAtivo','igCategoria','score','temperatura','abordagem','dossie','busca']
+              'instagram','igSeguidores','igPosts','igAtivo','igCategoria','score','temperatura','abordagem','dossie','busca',
+              'oportunidade','diagnostico','siteAnalise']
     c = sqlite3.connect(db)
     c.execute('''CREATE TABLE IF NOT EXISTS leads(slug TEXT PRIMARY KEY, nome TEXT, nicho TEXT, cidade TEXT,
         nota REAL, avaliacoes INTEGER, email TEXT, telefone TEXT, whatsapp TEXT, siteAntigo TEXT, motivo TEXT,
@@ -466,12 +552,13 @@ def salvar_lead(db, lead):
         contratoStatus TEXT DEFAULT 'pendente', contratoEm TEXT, manutencao REAL, pago INTEGER DEFAULT 0,
         docCliente TEXT, endCliente TEXT, instagram TEXT, igSeguidores INTEGER, igPosts INTEGER,
         igAtivo TEXT, igCategoria TEXT, score INTEGER, temperatura TEXT, abordagem TEXT, dossie TEXT,
-        contatadoEm TEXT, contatadoPor TEXT, atualizado TEXT)''')
+        contatadoEm TEXT, contatadoPor TEXT, atualizado TEXT, oportunidade TEXT, diagnostico TEXT, siteAnalise TEXT)''')
     # garantir colunas novas em bancos antigos
     existentes = [r[1] for r in c.execute("PRAGMA table_info(leads)")]
     for col, tipo in [('instagram','TEXT'),('igSeguidores','INTEGER'),('igPosts','INTEGER'),('igAtivo','TEXT'),
                       ('igCategoria','TEXT'),('score','INTEGER'),('temperatura','TEXT'),('abordagem','TEXT'),
-                      ('dossie','TEXT'),('contatadoEm','TEXT'),('contatadoPor','TEXT'),('busca','TEXT')]:
+                      ('dossie','TEXT'),('contatadoEm','TEXT'),('contatadoPor','TEXT'),('busca','TEXT'),
+                      ('oportunidade','TEXT'),('diagnostico','TEXT'),('siteAnalise','TEXT')]:
         if col not in existentes:
             try: c.execute('ALTER TABLE leads ADD COLUMN %s %s' % (col, tipo))
             except Exception: pass
@@ -522,6 +609,15 @@ def main():
                 motivo = 'site fora do ar'
         else:
             motivo = 'NÃO TEM SITE — maior oportunidade' if not url else 'só tem rede social/diretório (sem site próprio)'
+        # análise de presença digital (heurística offline, grátis)
+        conteudo_analise = conteudo
+        if tem_site:
+            try:
+                _, raw_html = _http_get(url)
+                if len(raw_html) > 300: conteudo_analise = raw_html
+            except Exception:
+                pass
+        siteA = _analisar_site(conteudo_analise or '') if tem_site else {'design': 'sem site', 'ux': '—', 'oferta': '—', 'cta': False, 'razoes': ['sem site próprio — maior oportunidade']}
         # Instagram
         handle = achar_handle_ig(n, conteudo)
         ig = enriquecer_instagram(handle, chave, simular)
@@ -530,6 +626,8 @@ def main():
         # precisa de PELO MENOS um canal de contato
         if not (email or zap or handle):
             descartados.append((nome, 'sem nenhum contato (e-mail/zap/IG)')); continue
+        nivel = _classificar_oportunidade(zap, handle, email=email, siteA=siteA)
+        diag = _diagnostico(zap, handle, email=email, siteA=siteA, nivel=nivel)
         lead = {'slug': slugify(nome), 'nome': nome, 'nicho': (n.get('category') or nicho), 'cidade': cidade,
                 'busca': '%s · %s' % (nicho, cidade),
                 'nota': rating.get('value'), 'avaliacoes': rating.get('votes_count'), 'email': email,
@@ -538,6 +636,8 @@ def main():
                 'instagram': handle, 'igSeguidores': (ig or {}).get('seguidores'), 'igPosts': (ig or {}).get('posts'),
                 'igAtivo': ('sim' if (ig or {}).get('ativo') else ('não' if ig and ig.get('ativo') is not None else None)),
                 'igCategoria': (ig or {}).get('categoria'),
+                'oportunidade': nivel, 'diagnostico': diag,
+                'siteAnalise': json.dumps(siteA, ensure_ascii=False),
                 'obs': 'logo: %s | foto: %s' % (n.get('logo') or '-', n.get('main_image') or '-')}
         sc, temp, abordagem = score_lead(lead, ig, chave, simular)
         lead['score'] = sc; lead['temperatura'] = temp; lead['abordagem'] = abordagem
@@ -549,12 +649,15 @@ def main():
         salvar_lead(DB, lead)
         emoji = '🔥' if temp == 'quente' else ('🌤️' if temp == 'morno' else '❄️')
         print('   %s %s — score %d — ★%s (%s) — %s%s' % (emoji, nome, sc, rating.get('value'), rating.get('votes_count'),
-              ('SEM SITE' if not tem_site else 'site fraco'), (' · IG @%s' % handle) if handle else ''))
+              _TAG_NIVEL.get(nivel, nivel), (' · IG @%s' % handle) if handle else ''))
     for nome, motivo in descartados:
         print('   ✖ %s — %s' % (nome, motivo))
     regenerar_dashboard()
     quentes = len([l for l in qualificados if l.get('temperatura') == 'quente'])
+    niveis = {}
+    for l in qualificados: niveis[l.get('oportunidade', 'media')] = niveis.get(l.get('oportunidade', 'media'), 0) + 1
     print('\n📊 %d leads no dossiê (%d 🔥 quentes) · %d descartados.' % (len(qualificados), quentes, len(descartados)))
+    print('📈 Oportunidades: %d 🔴 alta · %d 🟡 média · %d 🟢 baixa.' % (niveis.get('alta', 0), niveis.get('media', 0), niveis.get('baixa', 0)))
     print('💰 Custo da rodada: US$ %.4f + %d chamadas de API (dados + IG + modelo).' % (CUSTO['usd'], CUSTO['chamadas']))
     if qualificados:
         print('   Custo por lead: US$ %.4f.' % (CUSTO['usd'] / len(qualificados)))
