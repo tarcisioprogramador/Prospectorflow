@@ -1,0 +1,15 @@
+#!/bin/bash
+cd "$(dirname "$0")"
+echo "============================================"
+echo " Prospector Standalone - verificando tudo"
+echo "============================================"
+command -v python3 >/dev/null || { echo "[ERRO] Instale o Python 3 (python.org ou brew install python3)"; read -p "Enter..."; exit 1; }
+echo "[OK] Python encontrado."
+pip3 install python-docx >/dev/null 2>&1 && echo "[OK] Gerador de contrato Word pronto." || echo "[AVISO] contrato sai so em HTML."
+echo ""
+echo "[OK] Instalado! Proximos passos:"
+echo "  1. Conta em aisa.one (US\$2 gratis) -> gere a chave."
+echo "  2. Duplo clique em iniciar-dashboard.command"
+echo "  3. Configuracoes -> Motor de IA -> cole a chave -> Salvar."
+echo "  4. Aba Assistente: 'prospectar nutricionista em Sao Paulo'"
+read -p "Enter para fechar..."

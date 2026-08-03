@@ -1,0 +1,4 @@
+__pycache__/
+*.pyc
+config-standalone.json
+motor-log.txt

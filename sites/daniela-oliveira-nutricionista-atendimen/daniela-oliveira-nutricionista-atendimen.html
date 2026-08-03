@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daniela Oliveira - Nutricionista — site renovado (conceito)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;800&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--cor1:#C15F3C;--cor2:#9e4d31;--ink:#201D1A;--paper:#F6F3EE;--white:#FFFFFF;--muted:#6E6A63;--line:#E7E2D8}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',-apple-system,'Segoe UI',sans-serif;color:var(--ink);background:var(--paper);line-height:1.65;-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:'Playfair Display',serif;line-height:1.15}
+.wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+.badge{position:fixed;top:14px;right:14px;z-index:50;background:#14110E;color:#F2EDE4;font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;padding:7px 12px;border-radius:999px;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+.hero{position:relative;color:#fff;padding:clamp(90px,14vh,150px) 0;background-image:url('https://danielanutri.com.br/images/daninutri_foto1.avif') center/cover no-repeat}
+.hero::after{content:'';position:absolute;inset:0;background:linear-gradient(112deg,rgba(15,13,11,.88) 18%,rgba(15,13,11,.62) 52%,rgba(15,13,11,.28))}
+.hero .wrap{position:relative;z-index:1}
+.hero .kicker{display:inline-block;font-size:12.5px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#E8D9B5;border:1px solid rgba(255,255,255,.35);padding:7px 14px;border-radius:999px;margin-bottom:22px}
+.hero h1{font-size:clamp(38px,6.4vw,66px);max-width:760px}
+.hero p{font-size:clamp(16px,2vw,20px);max-width:580px;margin-top:20px;color:#E7E1D5}
+.cta{display:inline-flex;align-items:center;gap:9px;margin-top:30px;padding:16px 30px;border-radius:13px;background:var(--cor1);color:#fff;font-weight:800;font-size:16px;text-decoration:none;transition:.2s;box-shadow:0 10px 26px rgba(0,0,0,.25)}
+.cta:hover{transform:translateY(-2px);background:var(--cor2)}
+.barra{background:#14110E;color:#E7E1D5}
+.barra .wrap{display:flex;gap:34px;flex-wrap:wrap;padding-top:20px;padding-bottom:20px}
+.barra b{font-size:15px;color:#fff;display:block}
+.barra span{font-size:12px;color:#B9B2A5}
+section{padding:clamp(70px,10vh,110px) 0}
+h2.sec{font-size:clamp(28px,3.6vw,40px);margin-bottom:8px}
+.lead-sec{color:var(--muted);max-width:560px;margin-bottom:36px;font-size:16px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:18px}
+.card{background:var(--white);border:1px solid var(--line);border-radius:18px;padding:26px 24px;box-shadow:0 2px 10px rgba(0,0,0,.04);transition:.2s}
+.card:hover{transform:translateY(-4px);box-shadow:0 16px 34px rgba(0,0,0,.10)}
+.card .ico{width:46px;height:46px;border-radius:12px;background:var(--cor1);color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:16px}
+.card h3{font-size:19px;margin-bottom:8px}
+.card p{color:var(--muted);font-size:14px}
+.sobre{background:var(--white)}
+.sobre .dupla{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center}
+.sobre p{color:#57524B;font-size:16px;margin-bottom:14px}
+.local{background:#14110E;color:#E7E1D5}
+.local .dupla{display:grid;grid-template-columns:1fr 1fr;gap:36px}
+.local h2{color:#fff}
+.local b{color:#fff;font-size:16px;display:block;margin-top:14px}
+.cta-fim{text-align:center}
+.cta-fim h2{font-size:clamp(30px,4.4vw,48px);max-width:700px;margin:0 auto}
+footer{border-top:1px solid var(--line);background:#EFEBE3;padding:34px 0;font-size:13px;color:var(--muted)}
+footer .wrap{display:flex;gap:26px;flex-wrap:wrap;justify-content:space-between;align-items:center}
+footer a{color:var(--cor2);font-weight:700;text-decoration:none}
+.zap{position:fixed;left:18px;bottom:18px;width:60px;height:60px;border-radius:50%;background:#25D366;display:flex;align-items:center;justify-content:center;font-size:30px;box-shadow:0 10px 26px rgba(0,0,0,.30);text-decoration:none;transition:.2s}
+.zap:hover{transform:scale(1.08)}
+@media(max-width:760px){.sobre .dupla,.local .dupla{grid-template-columns:1fr}.hero{padding:80px 0}}
+</style>
+</head>
+<body>
+<div class="badge">conceito · site renovado</div>
+<header class="hero">
+ <div class="wrap">
+  <span class="kicker">NUTRICIONISTA · SAO PAULO</span>
+  <h1>Daniela Oliveira - Nutricionista</h1>
+  <p>Nutricionista Daniela Oliveira - Atendimento online para mulheres focado em emagrecimento saudável, saúde da mulher, longevidade, bem-estar e reeducação alimentar. Consultas online em todo Brasil.</p>
+  <a class="cta" href="https://wa.me/5511983236963?text=Ol%C3%A1%21%20Vim%20ver%20a%20pr%C3%A9via%20do%20novo%20site%20que%20preparei%20%E2%80%94%20pode%20me%20mostrar%3F">Chamar no WhatsApp</a>
+ </div>
+</header>
+<div class="barra"><div class="wrap"><div><b>5511983236963</b><span>WhatsApp</span></div> <div><b>danielacris.dclo@gmail.com</b><span>e-mail direto</span></div> <div><b>Sao Paulo</b><span>local de atendimento</span></div></div></div>
+<section id="servicos"><div class="wrap">
+ <h2 class="sec">O que oferecemos</h2>
+ <p class="lead-sec">Especialidades e serviços de Nutricionista em Sao Paulo.</p>
+ <div class="grid"><div class="card"><div class="ico">🩺</div><h3>No que eu atuo em Nutrição para mulheres</h3><p>Atendimento em Sao Paulo — fale conosco pra saber mais.</p></div><div class="card"><div class="ico">💻</div><h3>Como funciona a Consulta Nutricional Online</h3><p>Atendimento em Sao Paulo — fale conosco pra saber mais.</p></div><div class="card"><div class="ico">📅</div><h3>Sobre Daniela Oliveira - Nutricionista Especializada em Saúde da Mulher</h3><p>Atendimento em Sao Paulo — fale conosco pra saber mais.</p></div><div class="card"><div class="ico">⭐</div><h3>Perguntas Frequentes sobre Atendimento Nutricional</h3><p>Atendimento em Sao Paulo — fale conosco pra saber mais.</p></div><div class="card"><div class="ico">🏥</div><h3>Contato com a Nutricionista para Consultas Online</h3><p>Atendimento em Sao Paulo — fale conosco pra saber mais.</p></div><div class="card"><div class="ico">🌿</div><h3>Emagrecimento saudável</h3><p>Atendimento em Sao Paulo — fale conosco pra saber mais.</p></div></div>
+</div></section>
+<section class="sobre" id="sobre"><div class="wrap">
+ <div class="dupla">
+  <div><h2 class="sec">Conheça o nosso trabalho</h2><p class="lead-sec">Um pouco sobre o que fazemos e como atendemos.</p></div>
+  <div><p>Meu objetivo é auxiliar você, mulher, a conquistar uma vida mais saudável e feliz, com um tratamento personalizado e focado em suas necessidades individuais. Atendimento exclusivamente online para todo o Brasil. Vamos juntas nessa jornada de cuidado e bem-estar!</p><p>Atendimento personalizado para diferentes necessidades nutricionais, sempre respeitando sua individualidade e história com a alimentação.</p><p>Reeducação alimentar, se livrar do efeito sanfona, melhorar relação com a comida, ter autonomia alimentar</p></div>
+ </div>
+</div></section>
+<section class="local" id="contato"><div class="wrap">
+ <div class="dupla">
+  <div><h2 class="sec">Fale com a gente</h2>
+   <p class="lead-sec">danielacris.dclo@gmail.com · 5511983236963 · 5511983236963 · @danicris.nutri · al-scale=1.0&quot;</p>
+   <b>Endereço</b><p>al-scale=1.0&quot;</p>
+  </div>
+  <div style="border-radius:20px;min-height:240px;background:#00000022;padding:26px">
+    <b style="color:#fff">Como falar</b>
+    <p style="margin-top:12px;color:#C9C1B2">Prefere direto pelo WhatsApp? Resposta rápida, sem cadastro.</p>
+    <a class="cta" href="https://wa.me/5511983236963?text=Ol%C3%A1%21%20Vim%20ver%20a%20pr%C3%A9via%20do%20novo%20site%20que%20preparei%20%E2%80%94%20pode%20me%20mostrar%3F">Chamar no WhatsApp ↗</a>
+  </div>
+ </div>
+</div></section>
+<section class="cta-fim"><div class="wrap">
+ <h2>Pronto pra dar o próximo passo?</h2>
+ <a class="cta" href="https://wa.me/5511983236963?text=Ol%C3%A1%21%20Vim%20ver%20a%20pr%C3%A9via%20do%20novo%20site%20que%20preparei%20%E2%80%94%20pode%20me%20mostrar%3F">Chamar no WhatsApp</a>
+</div></section>
+<footer><div class="wrap">
+ <span>© <span id="ano"></span> Daniela Oliveira - Nutricionista · Sao Paulo</span>
+ <span>danielacris.dclo@gmail.com · WhatsApp: 5511983236963 · @danicris.nutri</span>
+</div></footer>
+<a class="zap" href="https://wa.me/5511983236963?text=Ol%C3%A1%21%20Vim%20ver%20a%20pr%C3%A9via%20do%20novo%20site%20que%20preparei%20%E2%80%94%20pode%20me%20mostrar%3F" aria-label="WhatsApp">💬</a>
+<script>document.getElementById('ano').textContent=new Date().getFullYear();</script>
+</body>
+</html>

@@ -1,0 +1,132 @@
+============================================================
+LINKEDIN - FÁBRICA DE SOFTWARE  (pronto pra copiar e colar)
+Rio de Janeiro · presencial e remoto
+============================================================
+
+------------------------------------------------------------
+1) HEADLINE (título do perfil)
+------------------------------------------------------------
+Fundador da Fábrica de Software — sua ideia vira software que vende · Sites, Sistemas, IA e SaaS · +1.000 projetos entregues · Rio de Janeiro & Remoto
+
+------------------------------------------------------------
+2) SOBRE (perfil pessoal + página da empresa)
+------------------------------------------------------------
+Fábrica de Software: sua ideia vira software que vende.
+
+Sites que convertem, sistemas que automatizam, IA que atende 24h, apps que escalam. Da estratégia ao deploy, entregamos tecnologia que faz seu negócio crescer de verdade.
+
+Segmentos que atendemos: E-commerce & Varejo · Saúde & Bem-estar · Educação · Fintechs & Bancos · Indústria · Serviços & Consultorias · Startups.
+
+Soluções:
+🖥️ Criação de Sites & Landing Pages — sites institucionais, landing pages de alta conversão, portais e e-commerces. Design moderno, performance extrema e SEO nativo desde a primeira linha de código. (React · Next.js · SEO · UI/UX)
+⚙️ Sistemas Web Sob Medida — CRMs, ERPs leves, dashboards e plataformas de gestão desenvolvidos do zero para as suas regras de negócio. Escalável, seguro, feito pra durar. (Node.js · Python · APIs REST · PostgreSQL)
+🤖 Automação com Inteligência Artificial — bots treinados com seus dados, atendimento automatizado 24/7 e agentes de IA que vendem, tiram dúvidas e qualificam leads. (ChatGPT API · NLP · RPA)
+📱 Aplicativos Android & iOS — do protótipo à publicação nas lojas. (React Native · Flutter)
+☁️ Plataformas SaaS & Produtos Digitais — autenticação, multi-tenancy, pagamentos recorrentes e infraestrutura cloud pronta pra crescer. (SaaS · Stripe · AWS)
+🔗 Integrações & APIs Corporativas — conecte CRMs, ERPs, gateways e marketplaces. (Webhooks · Middleware · Cloud)
+📈 SEO & Tráfego — apareça no Google sem pagar por clique (on-page, técnico, local e link building) + campanhas de tráfego pago com ROI mensurável.
+
+Metodologia (3 passos): 1) Diagnóstico Estratégico 2) Prototipação & Aprovação 3) Desenvolvimento Ágil, com entregas a cada sprint.
+
+Números: +1.000 projetos entregues · R$ 1M+ em resultados gerados · 60+ empresas atendidas · 98% de satisfação · nota 5.0 no Google.
+
+Seu negócio depende de tecnologia pra vender? Diagnóstico gratuito de 30 min → proposta em até 48h. Fale comigo por aqui ou pelo WhatsApp: (21) 99693-6397.
+
+------------------------------------------------------------
+3) EXPERIÊNCIA
+------------------------------------------------------------
+Cargo: Fundador & Desenvolvedor Full-stack
+Empresa: Fábrica de Software
+Local: Rio de Janeiro, RJ · presencial e remoto
+URL: https://tarcisioflow.dev
+Descrição: Sites que convertem, sistemas que automatizam, IA que atende 24h, apps que escalam.
+
+------------------------------------------------------------
+4) DESTACADOS (Featured)
+------------------------------------------------------------
+- Seu site: https://tarcisioflow.dev
+- Google Meu Negócio (nota 5.0)
+- 1 projeto do portfólio
+
+------------------------------------------------------------
+5) SKILLS (ordem de prioridade)
+------------------------------------------------------------
+Desenvolvimento Web · Next.js · React · Node.js · Python · Inteligência Artificial · SaaS · SEO · Automação · UI/UX · PostgreSQL · APIs REST
+
+------------------------------------------------------------
+6) PÁGINA DA EMPRESA  (linkedin.com/company/setup)
+------------------------------------------------------------
+Nome: Fábrica de Software
+Tagline: Tecnologia que faz seu negócio crescer
+Tipo: Empresa de serviços de TI
+Website: https://tarcisioflow.dev
+Endereço: Rio de Janeiro, RJ
+Sobre: cole o texto da seção 2
+
+------------------------------------------------------------
+7) POST DE BOAS-VINDAS (publicar primeiro na página)
+------------------------------------------------------------
+🚀 Bem-vindos à Fábrica de Software — Rio de Janeiro, atendendo o Brasil inteiro.
+
+Nossa promessa é simples: sua ideia vira software que vende.
+
+Sites que convertem, sistemas que automatizam, IA que atende 24h, apps que escalam. Da estratégia ao deploy, entregamos tecnologia que faz seu negócio crescer de verdade.
+
+O que entregamos:
+🖥️ Sites & landing pages de alta conversão
+⚙️ Sistemas web sob medida (CRM, ERP, dashboards)
+🤖 Automação com IA que vende e qualifica leads
+📱 Apps Android & iOS
+☁️ Plataformas SaaS & produtos digitais
+🔗 Integrações & APIs corporativas
+
++1.000 projetos entregues · R$ 1M+ em resultados gerados · 60+ empresas atendidas · 98% de satisfação.
+
+Tem um projeto em mente? Diagnóstico gratuito de 30 min → proposta em 48h. Chama no WhatsApp: (21) 99693-6397 💬
+
+------------------------------------------------------------
+8) OUTROS POSTS PRONTOS
+------------------------------------------------------------
+[A] Sites & Landing Pages:
+🖥️ Seu site é a primeira impressão — e a primeira impressão vende (ou perde).
+Criamos sites institucionais, landing pages de alta conversão, portais e e-commerces com design moderno, performance extrema e SEO nativo desde a primeira linha de código.
+Resultado: presença no Google (página 1), carregamento rápido (Core Web Vitals) e um site que trabalha por você 24h.
+→ React · Next.js · SEO · UI/UX
+Quer ver como o seu site está hoje? Análise gratuita — comenta aqui ou chama no privado. 📈
+
+[B] IA:
+🤖 IA que atende 24h, vende e qualifica seus leads.
+Não é robô de menu. São agentes de IA treinados com os dados do SEU negócio: atendem clientes, tiram dúvidas, qualificam e até fecham conversas — enquanto você trabalha.
+Um e-commerce nosso cresceu 35% nas vendas em 3 meses com um chatbot de IA.
+→ ChatGPT API · NLP · RPA · Agentes de IA
+Pronto pra automatizar? Diagnóstico gratuito: (21) 99693-6397.
+
+[C] Processo:
+📋 Nosso processo é transparente — você sabe exatamente o que acontece em cada etapa:
+1️⃣ Diagnóstico Estratégico — mapeamos dores, objetivos, concorrência e regras de negócio. Devolvemos escopo, cronograma, tecnologias e investimento.
+2️⃣ Prototipação & Aprovação — protótipos navegáveis completos. Você testa, ajusta e aprova antes da primeira linha de código. Zero surpresa.
+3️⃣ Desenvolvimento Ágil — entregas a cada sprint, código limpo com testes, deploy contínuo. Você vê o produto evoluir semanalmente.
+Testado em +1.000 projetos. Por isso 98% dos clientes recomendam.
+
+[D] Prova social:
+📊 Números que falam:
+• +1.000 projetos entregues
+• R$ 1M+ em resultados gerados
+• 60+ empresas atendidas
+• 98% recomendam nosso trabalho
+• 5.0/5 no Google
+E histórias de verdade: imobiliária recebendo leads todos os dias em 2 meses · clínica que reduziu 60% das faltas · e-commerce com +35% de vendas com IA.
+Não entregamos código. Entregamos solução para o seu desafio.
+
+[E] SEO:
+💡 Tráfego pago para quando você para de pagar.
+SEO acumula: zero reais por clique, visitas 24/7, autoridade que ninguém tira.
+Fazemos a estratégia completa: SEO on-page, técnico, local ("criação de site Rio de Janeiro"), link building e relatórios mensais.
+Seus concorrentes estão pagando cada vez mais. Você pode aparecer de graça. 📈
+
+------------------------------------------------------------
+COMO USAR
+------------------------------------------------------------
+1) linkedin.com/in/tarcisiodev/edit → cole seções 1, 2, 3, 5.
+2) linkedin.com/company/setup → crie a página (seção 6), cole o sobre (2).
+3) Publique o post de boas-vindas (7) e depois A→E na ordem: 7, E, C, A, D, B.
