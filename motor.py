@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 Prospector Standalone — F1: motor de prospecção via AIsa (sem Claude, sem ChatGPT)
@@ -18,7 +18,16 @@ for _stream in (getattr(sys, 'stdout', None), getattr(sys, 'stderr', None)):
         pass
 
 PASTA = os.path.dirname(os.path.abspath(__file__))
-CFG = json.load(open(os.path.join(PASTA, 'config-standalone.json'), encoding='utf-8'))
+DB = os.environ.get('PROSPECTOR_DB', DB)
+CFG = {}
+try:
+    CFG = json.load(open(os.path.join(PASTA, 'config-standalone.json'), encoding='utf-8'))
+except Exception:
+    pass
+if 'AISA_KEY' in os.environ:
+    CFG.setdefault('aisa_key', os.environ['AISA_KEY'])
+if 'AISA_MODELO' in os.environ:
+    CFG['modelo'] = os.environ['AISA_MODELO']
 BASE_APIS = 'https://api.aisa.one/apis/v1'
 BASE_CHAT = 'https://api.aisa.one/v1'
 CUSTO = {'usd': 0.0, 'chamadas': 0}
@@ -384,11 +393,11 @@ def main_grátis(nicho, cidade, qtd):
                  'abordagem': 'E-mail + WhatsApp com elogio ao conteúdo e proposta de site moderno; sem IA, revisar o gancho antes.',
                  'dossie': json.dumps({'endereco': None, 'ig': ig2,
                                         'motivo': 'site encontrado em busca gratuita — avaliar manualmente'}, ensure_ascii=False)}
-        if _ja_contatado(os.path.join(PASTA, 'prospector.db'), lead['slug']):
+        if _ja_contatado(DB, lead['slug']):
             print('   ↪ %s — já contatado antes, pulado' % nome)
             continue
         qualificados.append(lead)
-        salvar_lead(os.path.join(PASTA, 'prospector.db'), lead)
+        salvar_lead(DB, lead)
         emoji = '🔥' if temp == 'quente' else ('🌤️' if temp == 'morno' else '❄️')
         print('   %s %s — score %d — %s%s%s' % (emoji, nome, sc,
               ('e-mail' if emails else ''), (' + WhatsApp' if zap else ''), (' · IG @%s' % ig) if ig else ''))
@@ -473,7 +482,7 @@ def salvar_lead(db, lead):
 def regenerar_dashboard():
     tpl = os.path.join(PASTA, 'dashboard-template.html')
     if not os.path.exists(tpl): return
-    c = sqlite3.connect(os.path.join(PASTA, 'prospector.db')); c.row_factory = sqlite3.Row
+    c = sqlite3.connect(DB); c.row_factory = sqlite3.Row
     leads = [dict(r) for r in c.execute('SELECT * FROM leads')]; c.close()
     t = open(tpl, encoding='utf-8').read().replace('__DADOS__',
         json.dumps({'atualizado': datetime.datetime.now().strftime('%d/%m/%Y %H:%M'), 'leads': leads}, ensure_ascii=False))
@@ -533,11 +542,11 @@ def main():
         sc, temp, abordagem = score_lead(lead, ig, chave, simular)
         lead['score'] = sc; lead['temperatura'] = temp; lead['abordagem'] = abordagem
         lead['dossie'] = json.dumps({'endereco': n.get('address'), 'ig': ig, 'motivo': motivo}, ensure_ascii=False)
-        if _ja_contatado(os.path.join(PASTA, 'prospector.db'), lead['slug']):
+        if _ja_contatado(DB, lead['slug']):
             print('   ↪ %s — já contatado antes, pulado' % nome)
             continue
         qualificados.append(lead)
-        salvar_lead(os.path.join(PASTA, 'prospector.db'), lead)
+        salvar_lead(DB, lead)
         emoji = '🔥' if temp == 'quente' else ('🌤️' if temp == 'morno' else '❄️')
         print('   %s %s — score %d — ★%s (%s) — %s%s' % (emoji, nome, sc, rating.get('value'), rating.get('votes_count'),
               ('SEM SITE' if not tem_site else 'site fraco'), (' · IG @%s' % handle) if handle else ''))

@@ -375,6 +375,7 @@ function zerarBuscas(){
  var n=leads.length;
  if(!n){alert('Nenhuma busca pra zerar \u2014 a lista j\u00e1 est\u00e1 vazia.');return}
  if(!confirm('Zerar as buscas: apagar TODOS os '+n+' leads prospectados do banco?\n\nIsso remove tudo (inclusive os j\u00e1 contatados) e n\u00e3o d\u00e1 pra desfazer.'))return;
+ if(prompt('Pra confirmar, digite APAGAR:')!=='APAGAR')return;
  fetch('/api/leads?status=todas',{method:'DELETE'}).then(function(r){return r.json()}).then(function(){return fetch('/api/leads',{cache:'no-store'})}).then(function(r){return r.json()}).then(function(ls){buscaSel='todas';leadFiltro='todos';contatoFiltro=false;leads=ls;render()}).catch(function(){alert('Servidor n\u00e3o respondeu.')});
 }
 function _cardLead(l){

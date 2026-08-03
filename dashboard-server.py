@@ -1,9 +1,12 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """Prospector — servidor local do dashboard (SQLite). Sem dependências: só Python padrão.
 Uso: python dashboard-server.py  (ou duplo clique em iniciar-dashboard.bat)
-Abre em http://localhost:8765 — edições, exclusões e drag&drop salvam no prospector.db"""
-import json, sqlite3, os, sys, webbrowser
+Abre em http://localhost:8766 — edições, exclusões e drag&drop salvam no prospector.db
+
+Deploy (ex.: Railway/Render): definir PORT, HOST=0.0.0.0, SENHA_PAINEL, PROSPECTOR_DB, AISA_KEY.
+"""
+import json, sqlite3, os, sys, webbrowser, hashlib
 for _stream in (getattr(sys, 'stdout', None), getattr(sys, 'stderr', None)):
     try:
         if _stream and hasattr(_stream, 'reconfigure'):
@@ -15,13 +18,38 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 
 PASTA = os.path.dirname(os.path.abspath(__file__))
 os.chdir(PASTA)
-DB = os.path.join(PASTA, 'prospector.db')
+DB = os.environ.get('PROSPECTOR_DB', os.path.join(PASTA, 'prospector.db'))
+DATA = os.environ.get('PROSPECTOR_DATA', PASTA)
+AGENDAMENTOS = os.path.join(DATA, 'agendamentos.json')
 CONFIG = os.path.join(PASTA, 'prospector-config.json')
 
 def ler_config():
     try: return json.load(open(CONFIG, encoding='utf-8'))
     except Exception: return {}
-PORTA = 8766
+PORT = int(os.environ.get('PORT', '8766'))
+DEPLOY = 'PORT' in os.environ
+HOST = os.environ.get('HOST', '0.0.0.0' if DEPLOY else '127.0.0.1')
+SENHA = os.environ.get('SENHA_PAINEL') or ''
+TOKEN = hashlib.sha256(('prospector::' + SENHA).encode('utf-8')).hexdigest() if SENHA else ''
+PROTEGIDO = bool(SENHA)
+
+def garantir_config():
+    """Sem config-standalone.json (ex.: primeiro deploy): cria a partir das variáveis de ambiente."""
+    pst = os.path.join(PASTA, 'config-standalone.json')
+    if os.path.exists(pst): return
+    cst = {}
+    if os.environ.get('AISA_KEY'): cst['aisa_key'] = os.environ['AISA_KEY']
+    if os.environ.get('AISA_MODELO'): cst['modelo'] = os.environ['AISA_MODELO']
+    pr = {}
+    for k in ('nota_minima', 'avaliacoes_minimas', 'raio_km', 'leads_por_busca'):
+        v = os.environ.get('PROSPECCAO_' + k.upper())
+        if v is not None:
+            try: pr[k] = float(v) if k == 'nota_minima' else int(float(v))
+            except Exception: pass
+    if pr: cst['prospeccao'] = pr
+    json.dump(cst, open(pst, 'w', encoding='utf-8'), ensure_ascii=False, indent=2)
+    print('config-standalone.json criado a partir das variáveis de ambiente')
+
 CAMPOS = ['slug','nome','nicho','cidade','nota','avaliacoes','email','telefone','whatsapp',
           'siteAntigo','motivo','status','urlNova','dataProposta','valor','obs',
           'contratoStatus','contratoEm','manutencao','pago','docCliente','endCliente',
@@ -59,10 +87,73 @@ def importar_snapshot():
         print('(sem snapshot para importar: %s)' % e)
 
 class App(SimpleHTTPRequestHandler):
+    def _cookie(self, nome):
+        for par in (self.headers.get('Cookie', '') or '').split(';'):
+            par = par.strip()
+            if par.startswith(nome + '='):
+                return par[len(nome) + 1:]
+        return None
+    def _autenticado(self):
+        if not PROTEGIDO: return True
+        return self._cookie('painel') == TOKEN
+    def _login_page(self):
+        corpo = ('<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8">'
+                 '<meta name="viewport" content="width=device-width,initial-scale=1">'
+                 '<title>Prospector — acesso</title>'
+                 '<style>body{font-family:Segoe UI,Arial,sans-serif;background:#0f1117;color:#e7e7ea;'
+                 'display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0}'
+                 '.box{background:#171a21;border:1px solid #2a2e3a;border-radius:14px;padding:32px;width:300px}'
+                 'h1{font-size:18px;margin:0 0 4px} p{color:#8a90a0;font-size:13px;margin:0 0 18px}'
+                 'input{width:100%;box-sizing:border-box;padding:11px;border-radius:8px;border:1px solid #2a2e3a;'
+                 'background:#0f1117;color:#fff;font-size:14px;margin-bottom:14px}'
+                 'button{width:100%;padding:11px;border:0;border-radius:8px;background:#3b82f6;color:#fff;'
+                 'font-size:14px;font-weight:600;cursor:pointer}'
+                 'button:hover{background:#2f6fdc} .err{color:#f87171;font-size:12.5px;display:none;margin-bottom:10px}'
+                 '</style></head><body><div class="box"><h1>🔐 Prospector</h1>'
+                 '<p>Painel protegido — digite a senha.</p>'
+                 '<div class="err" id="err">Senha incorreta</div>'
+                 '<input type="password" id="s" placeholder="Senha" autofocus>'
+                 '<button onclick="entrar()">Entrar</button></div>'
+                 '<script>function entrar(){var s=document.getElementById("s").value;'
+                 'fetch("/api/login",{method:"POST",headers:{"Content-Type":"application/json"},'
+                 'body:JSON.stringify({senha:s})}).then(function(r){if(r.ok){location.href="/"}'
+                 'else{document.getElementById("err").style.display="block"}})'
+                 '.catch(function(){document.getElementById("err").style.display="block"})}'
+                 'document.getElementById("s").addEventListener("keydown",function(e){if(e.key==="Enter")entrar()})'
+                 '</script></body></html>').encode('utf-8')
+        self.send_response(200)
+        self.send_header('Content-Type', 'text/html; charset=utf-8')
+        self.send_header('Cache-Control', 'no-store')
+        self.send_header('Content-Length', str(len(corpo)))
+        self.end_headers(); self.wfile.write(corpo)
+    def _negar(self):
+        return self._json(401, {'erro': 'nao_autenticado'})
+    def _ver_rota(self, rota):
+        if not PROTEGIDO: return True
+        if rota.startswith('/api/'):
+            if not self._autenticado():
+                self._negar(); return False
+        elif rota in ('/', '/dashboard.html', '/dashboard-template.html'):
+            if not self._autenticado():
+                self._login_page(); return False
+        return True
     def end_headers(self):
         self.send_header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
         self.send_header('Pragma', 'no-cache')
         super().end_headers()
+    def _login(self):
+        corpo = self._corpo()
+        if PROTEGIDO and corpo.get('senha') == SENHA:
+            body = json.dumps({'ok': True}, ensure_ascii=False).encode('utf-8')
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json; charset=utf-8')
+            seg = '; Secure' if (DEPLOY or os.environ.get('COOKIE_SECURE')) else ''
+            self.send_header('Set-Cookie', 'painel=%s; Path=/; Max-Age=2592000; HttpOnly; SameSite=Lax%s' % (TOKEN, seg))
+            self.send_header('Cache-Control', 'no-store')
+            self.send_header('Content-Length', str(len(body)))
+            self.end_headers(); self.wfile.write(body)
+            return
+        return self._json(401, {'erro': 'senha'})
     def _json(self, code, obj):
         corpo = json.dumps(obj, ensure_ascii=False).encode('utf-8')
         self.send_response(code)
@@ -74,6 +165,7 @@ class App(SimpleHTTPRequestHandler):
         n = int(self.headers.get('Content-Length', 0))
         return json.loads(self.rfile.read(n).decode('utf-8')) if n else {}
     def do_GET(self):
+        if not self._ver_rota(self.path.split('?')[0]): return
         if self.path.split('?')[0] == '/api/config':
             cfg = ler_config()
             hg = dict(cfg.get('hostgator', {}))
@@ -91,7 +183,7 @@ class App(SimpleHTTPRequestHandler):
             rows = [dict(r) for r in c.execute('SELECT * FROM leads').fetchall()]; c.close()
             return self._json(200, rows)
         if self.path.split('?')[0] == '/api/agendamentos':
-            ap = os.path.join(PASTA, 'agendamentos.json')
+            ap = AGENDAMENTOS
             ags = json.load(open(ap, encoding='utf-8')) if os.path.exists(ap) else []
             return self._json(200, ags)
         if self.path in ('/', ''):
@@ -108,10 +200,25 @@ class App(SimpleHTTPRequestHandler):
             self.path = '/dashboard.html'
         return SimpleHTTPRequestHandler.do_GET(self)
     def do_POST(self):
+        if self.path.split('?')[0].startswith('/api/') and not self._autenticado():
+            if self.path.split('?')[0] == '/api/login':
+                return self._login()
+            return self._negar()
+        if self.path.split('?')[0] == '/api/login':
+            return self._login()
+        if self.path.split('?')[0] == '/api/logout':
+            body = b'{"ok": true}'
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json; charset=utf-8')
+            self.send_header('Set-Cookie', 'painel=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax')
+            self.send_header('Cache-Control', 'no-store')
+            self.send_header('Content-Length', str(len(body)))
+            self.end_headers(); self.wfile.write(body)
+            return
         if self.path.split('?')[0] == '/api/agendamentos':
             ags = self._corpo()
             if isinstance(ags, list):
-                json.dump(ags, open(os.path.join(PASTA, 'agendamentos.json'), 'w', encoding='utf-8'), ensure_ascii=False, indent=2)
+                json.dump(ags, open(AGENDAMENTOS, 'w', encoding='utf-8'), ensure_ascii=False, indent=2)
                 return self._json(200, {'ok': True})
             return self._json(400, {'erro': 'formato'})
         if self.path.split('?')[0] == '/api/assistente':
@@ -136,6 +243,8 @@ class App(SimpleHTTPRequestHandler):
             c.commit(); c.close(); return self._json(200, {'ok': True})
         return self._json(404, {'erro': 'rota'})
     def do_PUT(self):
+        if self.path.split('?')[0].startswith('/api/') and not self._autenticado():
+            return self._negar()
         if self.path.split('?')[0] == '/api/config':
             cfg = ler_config(); corpo = self._corpo()
             if 'prospeccao' in corpo:
@@ -187,6 +296,8 @@ class App(SimpleHTTPRequestHandler):
             return self._json(200, {'ok': True})
         return self._json(404, {'erro': 'rota'})
     def do_DELETE(self):
+        if self.path.split('?')[0].startswith('/api/') and not self._autenticado():
+            return self._negar()
         from urllib.parse import parse_qs
         p = self.path.split('?')
         partes = p[0].split('/')
@@ -209,11 +320,16 @@ class App(SimpleHTTPRequestHandler):
     def log_message(self, *a): pass
 
 if __name__ == '__main__':
+    garantir_config()
     novo = not os.path.exists(DB)
     conexao().close()
     if novo: importar_snapshot()
-    print('Prospector rodando em http://localhost:%d  (Ctrl+C para parar)' % PORTA)
-    try: webbrowser.open('http://localhost:%d' % PORTA)
-    except Exception: pass
-    try: ThreadingHTTPServer(('127.0.0.1', PORTA), App).serve_forever()
+    if PROTEGIDO:
+        print('Painel com acesso por senha em http://%s:%d' % (HOST, PORT))
+    else:
+        print('Prospector rodando em http://localhost:%d  (Ctrl+C para parar)' % PORT)
+    if not DEPLOY:
+        try: webbrowser.open('http://localhost:%d' % PORT)
+        except Exception: pass
+    try: ThreadingHTTPServer((HOST, PORT), App).serve_forever()
     except KeyboardInterrupt: print('\nEncerrado.')

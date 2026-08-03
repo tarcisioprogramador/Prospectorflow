@@ -6,7 +6,7 @@ from urllib.parse import quote
 import motor  # reutiliza api(), chat(), extrair_site(), CFG, slugify, regenerar_dashboard
 
 PASTA = motor.PASTA
-DB = os.path.join(PASTA, 'prospector.db')
+DB = os.environ.get('PROSPECTOR_DB', os.path.join(PASTA, 'prospector.db'))
 MODELOS = os.path.join(PASTA, 'modelos')
 
 def _cfg_user():
